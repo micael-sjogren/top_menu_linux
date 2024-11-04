@@ -12,7 +12,7 @@ class Form1(tk.Tk):
         self.load_config()
 
         self.title("Menu_2")
-        self.overrideredirect(True)  # Remove window decorations
+        self.overrideredirect(True) 
         self.configure(background=self.backgroundColor)
 
         # Create a frame for the menu bar with a fixed height
@@ -72,16 +72,12 @@ class Form1(tk.Tk):
             messagebox.showerror("Error", f"Unable to open item: {e}")
 
     def open_text_file(self, file_path):
-        # Add your logic to handle text files
         subprocess.Popen(['notepad', file_path])
 
     def execute_sh_file(self, file_path):
-        # Check if file is a .sh file
         if file_path.endswith('.sh'):
-            # Ensure executable permissions are set
             self.set_executable_permission(file_path)
         
-        # Execute the .sh file asynchronously
         threading.Thread(target=self.execute_sh_command, args=(file_path,)).start()
 
     def execute_sh_command(self, file_path):
@@ -91,21 +87,18 @@ class Form1(tk.Tk):
             messagebox.showerror("Error", f"Failed to execute .sh file: {e}")
 
     def set_executable_permission(self, file_path):
-        # Set executable permission using chmod
         try:
-            os.chmod(file_path, 0o755)  # Octal 755 sets rwx permissions for owner and rx for group and others
+            os.chmod(file_path, 0o755)  
         except Exception as e:
             messagebox.showerror("Error", f"Failed to set executable permissions: {e}")
 
     def open_image_file(self, file_path):
-        # Add your logic to handle image files
         try:
             subprocess.Popen(['xdg-open', file_path])
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open image file: {e}")
 
     def open_with_default_application(self, file_path):
-        # Default action for other file types
         try:
             subprocess.Popen(['xdg-open', file_path])
         except Exception as e:
