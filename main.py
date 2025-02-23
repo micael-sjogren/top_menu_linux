@@ -6,13 +6,13 @@ import threading
 import subprocess
 
 class Form1(tk.Tk):
-    def __init__(self, config_file='/home/micael/code/menu/config.ini'):
+    def __init__(self, config_file='/home/micael/menu/config.ini'):
         super().__init__()
         self.config_file = config_file
         self.load_config()
 
         self.title("Menu_2")
-        self.overrideredirect(True) 
+        self.overrideredirect(True)  # Remove window decorations
         self.configure(background=self.backgroundColor)
 
         # Create a frame for the menu bar with a fixed height
@@ -42,20 +42,25 @@ class Form1(tk.Tk):
         self.textColor_Inactive = settings['textColor_Inactive']
         self.borderColor = settings['borderColor']
 
+    def format_menu_label(self, name):
+        """ Remove the first five characters and file extension from menu items. """
+        return os.path.splitext(name[5:])[0] if len(name) > 5 else os.path.splitext(name)[0]
+
     def populate_menu(self):
         for item in os.listdir(self.rootFolder):
             item_path = os.path.join(self.rootFolder, item)
+            formatted_label = self.format_menu_label(item)
+            
             if os.path.isdir(item_path):
                 folder_menu = tk.Menu(self.menu_bar, tearoff=0, bg=self.menuBarColor, fg=self.textColor, relief=tk.RAISED)
-                self.menu_bar.add_cascade(label=item, menu=folder_menu)
+                self.menu_bar.add_cascade(label=formatted_label, menu=folder_menu)
 
                 for sub_item in os.listdir(item_path):
                     sub_item_path = os.path.join(item_path, sub_item)
-                    display_label = os.path.splitext(sub_item)[0]  # Remove file extension for display
-                    folder_menu.add_command(label=display_label, command=lambda p=sub_item_path: self.open_item(p))
+                    sub_label = self.format_menu_label(sub_item)
+                    folder_menu.add_command(label=sub_label, command=lambda p=sub_item_path: self.open_item(p))
             elif os.path.isfile(item_path):
-                display_label = os.path.splitext(item)[0]  # Remove file extension for display
-                self.menu_bar.add_command(label=display_label, command=lambda p=item_path: self.open_item(p))
+                self.menu_bar.add_command(label=formatted_label, command=lambda p=item_path: self.open_item(p))
 
     def open_item(self, item_path):
         _, file_extension = os.path.splitext(item_path)
@@ -77,7 +82,6 @@ class Form1(tk.Tk):
     def execute_sh_file(self, file_path):
         if file_path.endswith('.sh'):
             self.set_executable_permission(file_path)
-        
         threading.Thread(target=self.execute_sh_command, args=(file_path,)).start()
 
     def execute_sh_command(self, file_path):
@@ -88,7 +92,7 @@ class Form1(tk.Tk):
 
     def set_executable_permission(self, file_path):
         try:
-            os.chmod(file_path, 0o755)  
+            os.chmod(file_path, 0o755)
         except Exception as e:
             messagebox.showerror("Error", f"Failed to set executable permissions: {e}")
 
