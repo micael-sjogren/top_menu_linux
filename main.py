@@ -47,20 +47,24 @@ class Form1(tk.Tk):
         return os.path.splitext(name[5:])[0] if len(name) > 5 else os.path.splitext(name)[0]
 
     def populate_menu(self):
-        for item in os.listdir(self.rootFolder):
+        items = sorted(os.listdir(self.rootFolder))  # Sort items alphabetically
+
+        for item in items:
             item_path = os.path.join(self.rootFolder, item)
             formatted_label = self.format_menu_label(item)
-            
+
             if os.path.isdir(item_path):
                 folder_menu = tk.Menu(self.menu_bar, tearoff=0, bg=self.menuBarColor, fg=self.textColor, relief=tk.RAISED)
                 self.menu_bar.add_cascade(label=formatted_label, menu=folder_menu)
 
-                for sub_item in os.listdir(item_path):
+                sub_items = sorted(os.listdir(item_path))  # Sort sub-items
+                for sub_item in sub_items:
                     sub_item_path = os.path.join(item_path, sub_item)
                     sub_label = self.format_menu_label(sub_item)
                     folder_menu.add_command(label=sub_label, command=lambda p=sub_item_path: self.open_item(p))
             elif os.path.isfile(item_path):
                 self.menu_bar.add_command(label=formatted_label, command=lambda p=item_path: self.open_item(p))
+
 
     def open_item(self, item_path):
         _, file_extension = os.path.splitext(item_path)
