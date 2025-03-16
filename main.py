@@ -35,6 +35,8 @@ class Form1(tk.Tk):
         self.menuWidth = int(settings['MenuWidth'])
         self.menuHeight = int(settings['MenuHeight'])
         self.textSize = int(settings['TextSize'])
+        self.fontFamily = settings['fontFamily']  
+        self.fontWeight = settings['fontWeight']  
         self.start_x = int(settings['Start_X-Position'])
         self.start_y = int(settings['Start_Y-Position'])
         self.backgroundColor = settings['backgroundColor']
@@ -49,7 +51,7 @@ class Form1(tk.Tk):
         return os.path.splitext(name[5:])[0] if len(name) > 5 else os.path.splitext(name)[0]
 
     def populate_menu(self):
-        custom_font = tkFont.Font(family="Arial", size=self.textSize, weight="normal")
+        custom_font = tkFont.Font(family=self.fontFamily, size=self.textSize, weight=self.fontWeight)
 
         items = sorted(os.listdir(self.rootFolder))  # Sort items alphabetically
 
