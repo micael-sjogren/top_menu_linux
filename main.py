@@ -1,18 +1,20 @@
 import tkinter as tk
 from tkinter import messagebox
+import tkinter.font as tkFont
 import os
 import configparser
 import threading
 import subprocess
 
 class Form1(tk.Tk):
-    def __init__(self, config_file='/home/micael/menu/config.ini'):
+    def __init__(self, config_file='/mnt/nas_rocky_linux/menu/config.ini'):
         super().__init__()
         self.config_file = config_file
         self.load_config()
 
         self.title("Menu_2")
         self.overrideredirect(True)  # Remove window decorations
+        #self.attributes('-topmost', False) 
         self.configure(background=self.backgroundColor)
 
         # Create a frame for the menu bar with a fixed height
@@ -47,6 +49,8 @@ class Form1(tk.Tk):
         return os.path.splitext(name[5:])[0] if len(name) > 5 else os.path.splitext(name)[0]
 
     def populate_menu(self):
+        custom_font = tkFont.Font(family="Arial", size=self.textSize, weight="normal")
+
         items = sorted(os.listdir(self.rootFolder))  # Sort items alphabetically
 
         for item in items:
@@ -55,15 +59,29 @@ class Form1(tk.Tk):
 
             if os.path.isdir(item_path):
                 folder_menu = tk.Menu(self.menu_bar, tearoff=0, bg=self.menuBarColor, fg=self.textColor, relief=tk.RAISED)
-                self.menu_bar.add_cascade(label=formatted_label, menu=folder_menu)
+                folder_menu.configure(font=custom_font)  # Apply font to dropdown menus
+                self.menu_bar.add_cascade(label=formatted_label, menu=folder_menu, font=custom_font)
 
-                sub_items = sorted(os.listdir(item_path))  # Sort sub-items
+                sub_items = sorted(os.listdir(item_path))
                 for sub_item in sub_items:
                     sub_item_path = os.path.join(item_path, sub_item)
-                    sub_label = self.format_menu_label(sub_item)
-                    folder_menu.add_command(label=sub_label, command=lambda p=sub_item_path: self.open_item(p))
+
+                    if self.is_divider(sub_item):
+                        folder_menu.add_separator()  # Add a divider
+                    else:
+                        sub_label = self.format_menu_label(sub_item)
+                        folder_menu.add_command(label=sub_label, command=lambda p=sub_item_path: self.open_item(p), font=custom_font)
+
             elif os.path.isfile(item_path):
-                self.menu_bar.add_command(label=formatted_label, command=lambda p=item_path: self.open_item(p))
+                if self.is_divider(item):
+                    self.menu_bar.add_separator()  # Add a divider
+                else:
+                    self.menu_bar.add_command(label=formatted_label, command=lambda p=item_path: self.open_item(p), font=custom_font)
+
+    def is_divider(self, filename):
+        return self.format_menu_label(filename) == "x---------------x"
+
+
 
 
     def open_item(self, item_path):
@@ -73,8 +91,8 @@ class Form1(tk.Tk):
                 self.open_text_file(item_path)
             elif file_extension == '.sh':
                 self.execute_sh_file(item_path)
-            elif file_extension in ['.jpg', '.jpeg', '.png', '.gif']:
-                self.open_image_file(item_path)
+            elif file_extension == '.py':
+                self.execute_python_file(item_path) 
             else:
                 self.open_with_default_application(item_path)
         except Exception as e:
@@ -82,6 +100,13 @@ class Form1(tk.Tk):
 
     def open_text_file(self, file_path):
         subprocess.Popen(['notepad', file_path])
+
+    def execute_python_file(self, file_path):
+        try:
+            subprocess.Popen(['python3', file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to execute Python file: {e}")
+
 
     def execute_sh_file(self, file_path):
         if file_path.endswith('.sh'):
